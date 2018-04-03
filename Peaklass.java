@@ -7,21 +7,21 @@ import java.util.Arrays;
 public class Peaklass {
     public static void main(String[] args) {
 
-        Pank SEB = new Pank("SEB", 0.18, 0.38);
+        Pank SEB = new Pank("SEB", 0.16, 0.38);
         Pank Swedbank = new Pank("Swedbank", 0, 0.38);
+        Pank LHV = new Pank("LHV", 0, 0);
 
-        Isik i1 = new Isik("Joosep", 10, "EE123433545234", SEB);
-        Isik i2 = new Isik("Klaus", 25, "EE123433545234", Swedbank);
-        Isik i3 = new Isik("Sten", 4, "EE123433545234", SEB);
-        Isik i4 = new Isik("Joss", 14, "EE123433545234", SEB);
-        Isik i5 = new Isik("Jose", 44, "EE123433545234", Swedbank);
+        Isik i1 = new Isik("Joosep", 10.54, "EE123433545234", SEB);
+        Isik i2 = new Isik("Klaus", 25.33, "EE123433545234", SEB);
+        Isik i3 = new Isik("Sten", 4, "EE123433545234", Swedbank);
+        Isik i4 = new Isik("Joss", 14.7, "EE123433545234", SEB);
+        Isik i5 = new Isik("Jose", 44.89, "EE123433545234", Swedbank);
+        Isik i6 = new Isik("Karl", 35.32, "EE125543666643", LHV);
+        Isik i7 = new Isik("Miq", 7.2, "EE56756473456", LHV);
 
-        Isik[] isikud = {i1, i2, i3, i4, i5};
-        System.out.println(arvelda(isikud));
+        Isik[] isikud = {i1, i7, i2, i3, i4, i5, i6};
 
-        List<Võlg> võlad = odavaimTeenustasu(isikud);
-
-        System.out.println(võlad);
+        System.out.println(odavaimTeenustasu(isikud));
 
     }
 
@@ -100,24 +100,34 @@ public class Peaklass {
         return võlad;
     }
 
-    public static List<Võlg> odavaimTeenustasu(Isik[] isikud) {
-        List<Võlg> võlad;
-        double odavaim = 100000000;
-        List<Võlg> odavaimVõlg = new ArrayList<>();      //Odavaim võlgade list
+    public static double teenusTasu(List<Võlg> võlad){
+        double teenusTasu = 0;
+        for (Võlg võlg : võlad) {
+            Pank kellelt = võlg.getKellelt().getPank();
+            Pank kellele = võlg.getKellele().getPank();
+            if(kellelt.equals(kellele))
+                teenusTasu += kellelt.getTasuSisene();
+            else
+                teenusTasu += kellelt.getTasuVäline();
+        }
+        return teenusTasu;
+    }
 
-        for (int i = 0; i < 20; i++) {
-            double tasudeSumma = 0;
+    public static List<Võlg> odavaimTeenustasu(Isik[] isikud) {
+        List<Võlg> võlad = arvelda(isikud);
+        double odavaim = teenusTasu(võlad);
+        System.out.println(odavaim);
+        System.out.println(võlad);
+        List<Võlg> odavaimVõlg = võlad;      //Odavaim võlgade list
+
+        for (int i = 0; i < 100000; i++) {
             Collections.shuffle(Arrays.asList(isikud));
             võlad = arvelda(isikud);
-            for (int j = 0; j < võlad.size(); j++) {
-                tasudeSumma += võlad.get(j).getSumma();
-            }
-            if(tasudeSumma < odavaim) {
+            if (teenusTasu(võlad) < odavaim)
+                odavaim = teenusTasu(võlad);
                 odavaimVõlg = võlad;
-            }
-
         }
-
+        System.out.println(odavaim);
         return odavaimVõlg;
     }
 }
