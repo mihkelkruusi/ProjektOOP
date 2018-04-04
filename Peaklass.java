@@ -1,27 +1,71 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Collections;
-import java.util.Arrays;
+import java.util.*;
 
 public class Peaklass {
     public static void main(String[] args) {
 
-        Pank SEB = new Pank("SEB", 0.18, 0.38);
+        List<Isik> isikud = new ArrayList<>();
+
+        Pank SEB = new Pank("SEB", 0.16, 0.38);    //Loome panga isendid
         Pank Swedbank = new Pank("Swedbank", 0, 0.38);
+        Pank LHV = new Pank("LHV", 0, 0);
+        Pank Luminor = new Pank("Luminor", 0, 0.38);
+        Pank[] pangad = {SEB, Swedbank, LHV, Luminor};
 
-        Isik i1 = new Isik("Joosep", 10, "EE123433545234", SEB);
-        Isik i2 = new Isik("Klaus", 25, "EE123433545234", Swedbank);
-        Isik i3 = new Isik("Sten", 4, "EE123433545234", SEB);
-        Isik i4 = new Isik("Joss", 14, "EE123433545234", SEB);
-        Isik i5 = new Isik("Jose", 44, "EE123433545234", Swedbank);
+        Scanner sc = new Scanner(System.in);    //Kasutajaga suhtlus, kasutaja sisestab andmed
+        System.out.println("Programm jagab ühised kulutused");
+        System.out.println("Vali pank järgnevast pankade loetelust: (Swedbank, SEB, LHV, Luminor)");
+        System.out.println("Sisesta osalejate arv");
+        int osalejateArv = Integer.parseInt(sc.nextLine());
+        while (isikud.size() != osalejateArv) {    //Isiku andmete küsimine ja isiku isendite loomine kuni kõik andmed on korrektselt sisestatud
+            int i = isikud.size();
+            System.out.println(i+1 + ". osaleja andmed (kujul: nimi, kulu, kontonumber, panga nimi)");
+            String andmed = sc.nextLine();
+            String[] tükid = andmed.split(",");
+            for (int j = 0; j < tükid.length; j++) {
+                tükid[j] = tükid[j].trim(); // eemaldab tühikud stringi eest ja tagant
+            }
+            Pank osalejaPank = Swedbank;
+            for (Pank pank : pangad) {
+                if(pank.getNimi().equals(tükid[3]))
+                    osalejaPank = pank;
+            }
+            try {
+                isikud.add(new Isik(tükid[0], Double.parseDouble(tükid[1]), tükid[2], osalejaPank));
+            }
+            catch(Exception e){
+                System.out.println("Vigane sisend");
+            }
+        }
 
-        Isik[] isikud = {i1, i2, i3, i4, i5};
-        System.out.println(arvelda(isikud));
+        Isik[] osalejad = new Isik[isikud.size()];
+        osalejad = isikud.toArray(osalejad);
 
-        List<Võlg> võlad = odavaimTeenustasu(isikud);
+        System.out.println("Kas jaotan kulud võrdselt (1) või loosin ühe õnneliku, kes katab kõik kulud (2)? (Vali valiku number (1/2))");
+        int vastus;
+        try {    //Kulud võrdselt/random
+            vastus = Integer.parseInt(sc.nextLine());
+        }
+        catch (NumberFormatException e){
+            System.out.println("Vale sisend, jaotan kulud võrdselt");
+            vastus = 1;
+        }
 
-        System.out.println(võlad);
+        List<Võlg> võlad = new ArrayList<>();
+        if (vastus == 1) {    //Soovitud meetodi käivitamine
+            võlad = odavaimTeenustasu(osalejad);
+        } else {
+            võlad = üksMaksabKõik(isikud);
+        }
+
+        List<Isik> võlaUsaldajad = new ArrayList<>();
+        for (Võlg võlg : võlad) {    //Võlausaldajate list ja võlgade väljastamine
+            if(!võlaUsaldajad.contains(võlg.getKellele()))
+                võlaUsaldajad.add(võlg.getKellele());
+            System.out.println(võlg);
+        }
+        for (Isik isik : võlaUsaldajad) {    //Kontonumbrite väljastamine
+            System.out.println(isik.getNimi() + " " + isik.getKontoNr());
+        }
 
     }
 
@@ -43,7 +87,7 @@ public class Peaklass {
         }
         näkku = Math.round(näkku * 100.0) / 100.0;
 
-        for (int i = 0; i < kulutused.length; i++) {
+        for (int i = 0; i < kulutused.length; i++) {     //Kulutuste võrdne jagamine ja võla isendite loomine
             if (kulutused[i] < näkku) {
                 kanda = näkku - kulutused[i];
                 indeks = suurimIndeks(kulutused);
@@ -86,7 +130,7 @@ public class Peaklass {
         return indeks;
     }
 
-    public List<Võlg> üksMaksabKõik(List<Isik> isikud) {
+    public static List<Võlg> üksMaksabKõik(List<Isik> isikud) {    //Leiame randomiga isiku, kes kõik kinni maksab
         List<Võlg> võlad = new ArrayList();
         Random rand = new Random();
         int N = rand.nextInt(isikud.size());
@@ -100,24 +144,31 @@ public class Peaklass {
         return võlad;
     }
 
-    public static List<Võlg> odavaimTeenustasu(Isik[] isikud) {
-        List<Võlg> võlad;
-        double odavaim = 100000000;
-        List<Võlg> odavaimVõlg = new ArrayList<>();      //Odavaim võlgade list
+    public static double teenusTasu(List<Võlg> võlad){    //Teenustasude summa leidmine
+        double teenusTasu = 0;
+        for (Võlg võlg : võlad) {
+            Pank kellelt = võlg.getKellelt().getPank();
+            Pank kellele = võlg.getKellele().getPank();
+            if(kellelt.equals(kellele))
+                teenusTasu += kellelt.getTasuSisene();
+            else
+                teenusTasu += kellelt.getTasuVäline();
+        }
+        return teenusTasu;
+    }
 
-        for (int i = 0; i < 20; i++) {
-            double tasudeSumma = 0;
+    public static List<Võlg> odavaimTeenustasu(Isik[] isikud) {    //Odavaima teenustasu leidmine
+        List<Võlg> võlad = arvelda(isikud);
+        double odavaim = teenusTasu(võlad);
+        List<Võlg> odavaimVõlg = võlad;      //Odavaim võlgade list
+
+        for (int i = 0; i < 10000; i++) {
             Collections.shuffle(Arrays.asList(isikud));
             võlad = arvelda(isikud);
-            for (int j = 0; j < võlad.size(); j++) {
-                tasudeSumma += võlad.get(j).getSumma();
-            }
-            if(tasudeSumma < odavaim) {
-                odavaimVõlg = võlad;
-            }
-
+            if (teenusTasu(võlad) < odavaim)
+                odavaim = teenusTasu(võlad);
+            odavaimVõlg = võlad;
         }
-
         return odavaimVõlg;
     }
 }
