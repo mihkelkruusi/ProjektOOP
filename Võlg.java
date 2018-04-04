@@ -23,6 +23,6 @@ public class Võlg {
 
     @Override
     public String toString() {
-        return kellelt + " -> " + kellele + " " + summa;
+        return kellelt.getNimi() + " -> " + kellele.getNimi() + " " + summa;
     }
 }
