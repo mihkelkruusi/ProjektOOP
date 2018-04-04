@@ -21,8 +21,22 @@ public class Peaklass {
             System.out.println(i+1 + ". osaleja andmed (kujul: nimi, kulu, kontonumber, panga nimi)");
             String andmed = sc.nextLine();
             String[] tükid = andmed.split(",");
+
+            if(tükid.length != 4) {                     //kontrollib, kas sisestati vajalik arv andmeid
+                System.out.println("Vale sisend");
+                continue;
+            }
             for (int j = 0; j < tükid.length; j++) {
                 tükid[j] = tükid[j].trim(); // eemaldab tühikud stringi eest ja tagant
+            }
+
+            List<String> panganimed = new ArrayList<>();
+            for (Pank pank : pangad) {
+                panganimed.add(pank.getNimi());
+            }
+            if (!panganimed.contains(tükid[3])){         //kontrollib kas panga nimi on õigesti sisestatud, kui mitte, küsib osaleja andmed uuesti
+                System.out.println("Panga nimi on valesti sisestatud");
+                continue;
             }
             Pank osalejaPank = Swedbank;
             for (Pank pank : pangad) {
