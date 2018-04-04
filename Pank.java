@@ -17,4 +17,8 @@ public class Pank {
     public double getTasuVäline() {
         return tasuVäline;
     }
+
+    public String getNimi() {
+        return nimi;
+    }
 }
