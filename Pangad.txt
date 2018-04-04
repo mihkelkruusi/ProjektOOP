@@ -1,0 +1,4 @@
+Swedbank;0;0.38
+SEB;0.16;0.38
+LHV;0;0
+Luminor;0;0.38
